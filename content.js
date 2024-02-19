@@ -28,6 +28,7 @@ function setPlaybackRate(rate) {
   const videoElements = document.querySelectorAll("video");
   videoElements.forEach((video) => {
     video.playbackRate = rate;
+    video.volume = 0; // 音量を0に設定（ミュート）
   });
 }
 
