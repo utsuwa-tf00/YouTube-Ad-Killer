@@ -1,56 +1,54 @@
 const observer = new MutationObserver((mutations) => {
-  let skipButtonFound = false;
-  let adModuleVisible = false;
-
   mutations.forEach((mutation) => {
-    if (mutation.addedNodes.length || mutation.removedNodes.length) {
-      // ここで一度だけ要素を取得
-      const skipButton = document.querySelector(
-        ".ytp-ad-skip-button-modern.ytp-button"
-      );
-      const video = document.querySelector("video");
+    const adModule = document.querySelector(".video-ads.ytp-ad-module");
+    const skipButton = document.querySelector(
+      ".ytp-ad-skip-button-modern.ytp-button"
+    );
+    const adThumbnail = document.querySelectorAll(
+      "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer"
+    );
+    const adMiniWindow = document.querySelector(
+      "div#player-ads.style-scope.ytd-watch-flexy"
+    );
+    const video = document.querySelector("video");
+    4;
 
-      if (skipButton && !skipButtonFound) {
+    if (adThumbnail.length > 0) {
+      adThumbnail.forEach(function (element) {
+        console.log("広告サムネイルを削除しました");
+        element.remove();
+      });
+    }
+
+    if (adMiniWindow) {
+      console.log("広告表示を削除しました");
+      adMiniWindow.remove();
+    }
+
+    if (mutation.addedNodes.length || mutation.removedNodes.length) {
+      if (skipButton) {
         console.log("スキップボタンをクリックします。");
         skipButton.click();
-        skipButtonFound = true; // スキップボタンが見つかったことを記録
-      }
-
-      if (video && !adModuleVisible) {
-        const adModule = document.querySelector(".video-ads.ytp-ad-module");
-        adModuleVisible = adModule && isElementVisible(adModule); // 広告モジュールの可視性をチェック
-
-        if (adModuleVisible) {
-          console.log("広告をスキップします");
-          if (video.style.opacity != 0) video.style.opacity = 0;
-          if (video.volume != 0) video.volume = 0;
-          if (video.currentTime < video.duration)
-            video.currentTime = video.duration;
+      } else if (video) {
+        if (adModule && isElementVisible(adModule)) {
+          //video.style.filter = "brightness(0%)";
+          video.style.opacity = 0;
+          video.volume = 0;
+          if (video.currentTime <= video.duration) {
+            console.log("広告をスキップします");
+            7;
+            video.currentTime = video.duration + 1;
+          }
+          //video.playbackRate = 16;
         } else {
-          video.style.opacity = 1;
-          //video.volume = 1; // 音量を元に戻す（必要に応じて）
+          //if (video.style.filter != "") {video.style.filter = "";}
+          if (video.style.opacity != 1) {
+            video.style.opacity = 1;
+          }
         }
       }
     }
   });
-
-  // 広告サムネイルとミニウィンドウの削除を一度だけ実行
-  document
-    .querySelectorAll(
-      "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer"
-    )
-    .forEach((element) => {
-      console.log("広告サムネイルを削除しました");
-      element.remove();
-    });
-
-  const adMiniWindow = document.querySelector(
-    "div#player-ads.style-scope.ytd-watch-flexy"
-  );
-  if (adMiniWindow) {
-    console.log("広告表示を削除しました");
-    adMiniWindow.remove();
-  }
 });
 
 function isElementVisible(element) {
