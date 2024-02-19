@@ -3,67 +3,68 @@ const observer = new MutationObserver((mutations) => {
     //ショート動画を消したい場合はtrue、消したくない場合はfalseに設定
     const shortKiller = true;
 
-    const adModule = document.querySelector(".video-ads.ytp-ad-module");
-    const skipButton = document.querySelector(
-      ".ytp-ad-skip-button-modern.ytp-button"
-    );
-    const ytdytdInFeedAdLayout = document.querySelector(
-      "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer"
-    );
-    const ytdAdSlotRenderer = document.querySelector(
-      "ytd-ad-slot-renderer.style-scope.ytd-rich-item-renderer"
-    );
-    const playerAds = document.querySelector(
-      "div#player-ads.style-scope.ytd-watch-flexy"
-    );
-    const video = document.querySelector("video");
+    if (window.location.href === "https://www.youtube.com/") {
+      const ytdAdElements = document.querySelectorAll(
+        "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer, ytd-ad-slot-renderer.style-scope.ytd-rich-item-renderer"
+      );
+      if (ytdAdElements.length > 0) {
+        ytdAdElements.forEach((element) => {
+          //console.log("YouTubeホーム : 広告を削除しました");
+          element.remove();
+        });
+      }
 
-    const short = document.querySelector("ytd-rich-shelf-renderer");
-    const homeShortTab = document.querySelector('a#endpoint[title="ショート"]');
+      if (shortKiller) {
+        const short = document.querySelector("ytd-rich-shelf-renderer");
+        if (short) {
+          //console.log("YouTubeホーム : ショート動画を削除しました");
+          short.remove();
+        }
 
-    if (ytdytdInFeedAdLayout) {
-      console.log("広告動画サムネイルを削除しました");
-      ytdytdInFeedAdLayout.remove();
-    }
-
-    if (ytdAdSlotRenderer) {
-      console.log("広告画像サムネイルを削除しました");
-      ytdAdSlotRenderer.remove();
-    }
-
-    if (playerAds) {
-      console.log("広告表示を削除しました");
-      playerAds.remove();
-    }
-
-    if (short && shortKiller) {
-      console.log("ショート動画を削除しました");
-      short.remove();
-    }
-
-    if (homeShortTab && shortKiller) {
-      console.log("ホーム画面のショートのタブを削除しました");
-      homeShortTab.parentElement.remove();
-    }
-
-    if (mutation.addedNodes.length || mutation.removedNodes.length) {
-      if (skipButton) {
-        console.log("スキップボタンをクリックします。");
-        skipButton.click();
-      } else if (video) {
-        if (adModule && isElementVisible(adModule)) {
-          video.style.opacity = 0;
-          video.volume = 0;
-          if (video.currentTime <= video.duration) {
-            console.log("広告をスキップします");
-            7;
-            video.currentTime = video.duration + 1;
-          }
+        const homeShortTab = document.querySelector(
+          'a#endpoint[title="ショート"], a#endpoint[title="Shorts"]'
+        );
+        if (homeShortTab) {
+          //console.log("YouTubeホーム : ホーム画面のショートのタブを削除しました");
+          homeShortTab.parentElement.remove();
+        }
+      }
+    } else if (
+      window.location.href.includes("https://www.youtube.com/watch?")
+    ) {
+      if (mutation.addedNodes.length || mutation.removedNodes.length) {
+        const skipButton = document.querySelector(
+          ".ytp-ad-skip-button-modern.ytp-button"
+        );
+        if (skipButton) {
+          //console.log("YouTube動画再生ページ : スキップボタンをクリックします。");
+          skipButton.click();
         } else {
-          if (video.style.opacity != 1) {
-            video.style.opacity = 1;
+          const adModule = document.querySelector(".video-ads.ytp-ad-module");
+          const video = document.querySelector("video");
+          if (adModule && isElementVisible(adModule)) {
+            video.style.opacity = 0;
+            video.volume = 0;
+            if (video.currentTime <= video.duration) {
+              //console.log("YouTube動画再生ページ : 広告をスキップします");
+              video.currentTime = video.duration + 1;
+            }
+          } else {
+            if (video.style.opacity != 1) {
+              video.style.opacity = 1;
+            }
           }
         }
+      }
+
+      const playerAds = document.querySelectorAll(
+        "div#player-ads.style-scope.ytd-watch-flexy, ytd-ad-slot-renderer.style-scope.ytd-watch-next-secondary-results-renderer"
+      );
+      if (playerAds.length > 0) {
+        playerAds.forEach((element) => {
+          //console.log("YouTube動画再生ページ : 広告を削除しました");
+          element.remove();
+        });
       }
     }
   });
