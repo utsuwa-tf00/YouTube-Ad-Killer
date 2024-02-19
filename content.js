@@ -5,7 +5,7 @@ const observer = new MutationObserver((mutations) => {
 
     if (window.location.href === "https://www.youtube.com/") {
       const ytdAdElements = document.querySelectorAll(
-        "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer, ytd-ad-slot-renderer.style-scope.ytd-rich-item-renderer"
+        "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer, ytd-ad-slot-renderer.style-scope.ytd-rich-item-renderer, div#masthead-ad.style-scope.ytd-rich-grid-renderer"
       );
       if (ytdAdElements.length > 0) {
         ytdAdElements.forEach((element) => {
