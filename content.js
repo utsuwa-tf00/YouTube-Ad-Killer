@@ -22,12 +22,13 @@ const observer = new MutationObserver((mutations) => {
 
         if (adModuleVisible) {
           console.log("広告をスキップします");
-          video.style.opacity = 0;
-          video.volume = 0;
-          video.currentTime = video.duration;
+          if (video.style.opacity != 0) video.style.opacity = 0;
+          if (video.volume != 0) video.volume = 0;
+          if (video.currentTime < video.duration)
+            video.currentTime = video.duration;
         } else {
           video.style.opacity = 1;
-          video.volume = 1; // 音量を元に戻す（必要に応じて）
+          //video.volume = 1; // 音量を元に戻す（必要に応じて）
         }
       }
     }
