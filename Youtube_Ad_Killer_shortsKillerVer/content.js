@@ -1,8 +1,5 @@
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
-    //ショート動画を消したい場合はtrue、消したくない場合はfalseに設定
-    const shortKiller = true;
-
     if (window.location.href === "https://www.youtube.com/") {
       const ytdAdElements = document.querySelectorAll(
         "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer, ytd-ad-slot-renderer.style-scope.ytd-rich-item-renderer, div#masthead-ad.style-scope.ytd-rich-grid-renderer"
@@ -14,21 +11,7 @@ const observer = new MutationObserver((mutations) => {
         });
       }
 
-      if (shortKiller) {
-        const short = document.querySelector("ytd-rich-shelf-renderer");
-        if (short) {
-          //console.log("YouTubeホーム : ショート動画を削除しました");
-          short.remove();
-        }
-
-        const homeShortTab = document.querySelector(
-          'a#endpoint[title="ショート"], a#endpoint[title="Shorts"]'
-        );
-        if (homeShortTab) {
-          //console.log("YouTubeホーム : ホーム画面のショートのタブを削除しました");
-          homeShortTab.parentElement.remove();
-        }
-      }
+      shortsKiller(); // ショート動画関連の要素を削除
     } else if (
       window.location.href.includes("https://www.youtube.com/watch?")
     ) {
@@ -73,6 +56,22 @@ const observer = new MutationObserver((mutations) => {
 function isElementVisible(element) {
   const style = window.getComputedStyle(element);
   return style.display !== "none" && style.visibility !== "hidden";
+}
+
+function shortsKiller() {
+  const short = document.querySelector("ytd-rich-shelf-renderer");
+  if (short) {
+    //console.log("YouTubeホーム : ショート動画を削除しました");
+    short.remove();
+  }
+
+  const homeShortTab = document.querySelector(
+    'a#endpoint[title="ショート"], a#endpoint[title="Shorts"]'
+  );
+  if (homeShortTab) {
+    //console.log("YouTubeホーム : ホーム画面のショートのタブを削除しました");
+    homeShortTab.parentElement.remove();
+  }
 }
 
 const config = { childList: true, subtree: true };
