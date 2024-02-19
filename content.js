@@ -1,28 +1,49 @@
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
+    //ショート動画を消したい場合はtrue、消したくない場合はfalseに設定
+    const shortKiller = true;
+
     const adModule = document.querySelector(".video-ads.ytp-ad-module");
     const skipButton = document.querySelector(
       ".ytp-ad-skip-button-modern.ytp-button"
     );
-    const adThumbnail = document.querySelectorAll(
+    const ytdytdInFeedAdLayout = document.querySelector(
       "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer"
     );
-    const adMiniWindow = document.querySelector(
+    const ytdAdSlotRenderer = document.querySelector(
+      "ytd-ad-slot-renderer.style-scope.ytd-rich-item-renderer"
+    );
+    const playerAds = document.querySelector(
       "div#player-ads.style-scope.ytd-watch-flexy"
     );
     const video = document.querySelector("video");
-    4;
 
-    if (adThumbnail.length > 0) {
-      adThumbnail.forEach(function (element) {
-        console.log("広告サムネイルを削除しました");
-        element.remove();
-      });
+    const short = document.querySelector("ytd-rich-shelf-renderer");
+    const homeShortTab = document.querySelector('a#endpoint[title="ショート"]');
+
+    if (ytdytdInFeedAdLayout) {
+      console.log("広告動画サムネイルを削除しました");
+      ytdytdInFeedAdLayout.remove();
     }
 
-    if (adMiniWindow) {
+    if (ytdAdSlotRenderer) {
+      console.log("広告画像サムネイルを削除しました");
+      ytdAdSlotRenderer.remove();
+    }
+
+    if (playerAds) {
       console.log("広告表示を削除しました");
-      adMiniWindow.remove();
+      playerAds.remove();
+    }
+
+    if (short && shortKiller) {
+      console.log("ショート動画を削除しました");
+      short.remove();
+    }
+
+    if (homeShortTab && shortKiller) {
+      console.log("ホーム画面のショートのタブを削除しました");
+      homeShortTab.parentElement.remove();
     }
 
     if (mutation.addedNodes.length || mutation.removedNodes.length) {
@@ -31,7 +52,6 @@ const observer = new MutationObserver((mutations) => {
         skipButton.click();
       } else if (video) {
         if (adModule && isElementVisible(adModule)) {
-          //video.style.filter = "brightness(0%)";
           video.style.opacity = 0;
           video.volume = 0;
           if (video.currentTime <= video.duration) {
@@ -39,9 +59,7 @@ const observer = new MutationObserver((mutations) => {
             7;
             video.currentTime = video.duration + 1;
           }
-          //video.playbackRate = 16;
         } else {
-          //if (video.style.filter != "") {video.style.filter = "";}
           if (video.style.opacity != 1) {
             video.style.opacity = 1;
           }
