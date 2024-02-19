@@ -1,44 +1,61 @@
 const observer = new MutationObserver((mutations) => {
+  let skipButtonFound = false;
+  let adModuleVisible = false;
+
   mutations.forEach((mutation) => {
     if (mutation.addedNodes.length || mutation.removedNodes.length) {
-      // スキップボタンの存在をチェック
+      // ここで一度だけ要素を取得
       const skipButton = document.querySelector(
         ".ytp-ad-skip-button-modern.ytp-button"
       );
-      if (skipButton) {
-        console.log("スキップボタンが検出されました。自動でクリックします。");
+      const video = document.querySelector("video");
+
+      if (skipButton && !skipButtonFound) {
+        console.log("スキップボタンをクリックします。");
         skipButton.click();
-      } else {
-        // 広告が表示されているがスキップボタンがない場合の処理
-        checkForAdsAndAdjustPlayback();
+        skipButtonFound = true; // スキップボタンが見つかったことを記録
+      }
+
+      if (video && !adModuleVisible) {
+        const adModule = document.querySelector(".video-ads.ytp-ad-module");
+        adModuleVisible = adModule && isElementVisible(adModule); // 広告モジュールの可視性をチェック
+
+        if (adModuleVisible) {
+          console.log("広告をスキップします");
+          video.style.opacity = 0;
+          video.volume = 0;
+          video.currentTime = video.duration;
+        } else {
+          video.style.opacity = 1;
+          video.volume = 1; // 音量を元に戻す（必要に応じて）
+        }
       }
     }
   });
-});
 
-function checkForAdsAndAdjustPlayback() {
-  const adModule = document.querySelector(".video-ads.ytp-ad-module");
-  if (adModule && isElementVisible(adModule)) {
-    console.log(
-      "広告が検出されましたが、スキップできません。ビデオの再生速度を16に設定し、音量を0にします。"
-    );
-    adjustVideoPlayback();
+  // 広告サムネイルとミニウィンドウの削除を一度だけ実行
+  document
+    .querySelectorAll(
+      "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer"
+    )
+    .forEach((element) => {
+      console.log("広告サムネイルを削除しました");
+      element.remove();
+    });
+
+  const adMiniWindow = document.querySelector(
+    "div#player-ads.style-scope.ytd-watch-flexy"
+  );
+  if (adMiniWindow) {
+    console.log("広告表示を削除しました");
+    adMiniWindow.remove();
   }
-}
+});
 
 function isElementVisible(element) {
   const style = window.getComputedStyle(element);
   return style.display !== "none" && style.visibility !== "hidden";
 }
 
-function adjustVideoPlayback() {
-  const videoElements = document.querySelectorAll("video");
-  videoElements.forEach((video) => {
-    video.playbackRate = 16;
-    video.volume = 0;
-  });
-}
-
 const config = { childList: true, subtree: true };
 observer.observe(document.body, config);
-checkForAdsAndAdjustPlayback();

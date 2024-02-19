@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Ad Accelerator",
-  "version": "1.2",
-  "description": "YouTubeで広告が再生される際に、再生速度を大幅に上げて広告表示時間を短縮することで、ユーザーの視聴体験を改善します。",
+  "name": "YouTube Ad Killer",
+  "version": "1.0",
+  "description": "一旦YouTubeの広告を駆逐",
   "permissions": ["activeTab"],
   "content_scripts": [
     {
