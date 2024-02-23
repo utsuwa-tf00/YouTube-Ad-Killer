@@ -49,6 +49,16 @@ const observer = new MutationObserver((mutations) => {
           element.remove();
         });
       }
+
+      const ytMealbarPromoRenderer = document.querySelectorAll(
+        "div#main.style-scope.yt-mealbar-promo-renderer"
+      );
+      if (ytMealbarPromoRenderer.length > 0) {
+        ytMealbarPromoRenderer.forEach((element) => {
+          //console.log("YouTube動画再生ページ : YouTubePremiumの無料体験ポップアップを削除しました");
+          element.remove();
+        });
+      }
     }
   });
 });
