@@ -93,7 +93,7 @@ function isElementVisible(element) {
 // YouTubeホームページ上の広告を削除する
 function youTubeHomeAdKiller() {
   const possibleAdElements = document.querySelectorAll(
-    "ytd-rich-item-renderer.style-scope, div#masthead-ad.style-scope.ytd-rich-grid-renderer"
+    "ytd-rich-item-renderer.style-scope, ytd-rich-section-renderer.style-scope.ytd-rich-grid-renderer, div#masthead-ad.style-scope.ytd-rich-grid-renderer"
   );
 
   possibleAdElements.forEach((element) => {
@@ -108,6 +108,14 @@ function youTubeHomeAdKiller() {
     }
     // div#masthead-adを直接削除
     if (element.matches("div#masthead-ad.style-scope.ytd-rich-grid-renderer")) {
+      element.remove();
+    }
+
+    if (
+      element.matches(
+        "ytd-rich-section-renderer.style-scope.ytd-rich-grid-renderer"
+      )
+    ) {
       element.remove();
     }
   });
