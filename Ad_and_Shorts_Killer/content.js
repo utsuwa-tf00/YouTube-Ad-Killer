@@ -14,7 +14,10 @@ document.addEventListener("keydown", function (event) {
 const observer = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
     const url = window.location.href;
-    if (url === "https://www.youtube.com/?bp=wgUCEAE%3D") {
+    if (
+      url === "https://www.youtube.com/" ||
+      url === "https://www.youtube.com/?bp=wgUCEAE%3D"
+    ) {
       youTubeHomeAdKiller();
       shortsKiller();
 
