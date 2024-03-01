@@ -14,7 +14,7 @@ document.addEventListener("keydown", function (event) {
 const observer = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
     const url = window.location.href;
-    if (url === "https://www.youtube.com/") {
+    if (url === "https://www.youtube.com/?bp=wgUCEAE%3D") {
       youTubeHomeAdKiller();
       shortsKiller();
 
@@ -157,9 +157,7 @@ function isElementVisible(element) {
 // YouTubeホームページ上の広告を削除する
 function youTubeHomeAdKiller() {
   // 最初に広告要素を取得
-  const adElements = document.querySelectorAll(
-    "ytd-in-feed-ad-layout-renderer.style-scope.ytd-ad-slot-renderer, ytd-ad-slot-renderer.style-scope.ytd-rich-item-renderer"
-  );
+  const adElements = document.querySelectorAll("ytd-ad-slot-renderer");
 
   if (adElements.length > 0) {
     console.log(
@@ -172,23 +170,20 @@ function youTubeHomeAdKiller() {
       let parentElement = adElement.parentElement;
       while (
         parentElement &&
-        !parentElement.matches("ytd-rich-item-renderer.style-scope")
+        !parentElement.matches("ytd-rich-item-renderer")
       ) {
         parentElement = parentElement.parentElement;
       }
 
       // 見つかったら削除
-      if (
-        parentElement &&
-        parentElement.matches("ytd-rich-item-renderer.style-scope")
-      ) {
+      if (parentElement && parentElement.matches("ytd-rich-item-renderer")) {
         parentElement.remove();
       }
     });
   }
 
   const mastheadAd = document.querySelector(
-    "div#masthead-ad.style-scope.ytd-rich-grid-renderer"
+    "div#big-yoodle.style-scope.ytd-rich-grid-renderer"
   );
   if (mastheadAd) {
     console.log("youTubeHomeAdKiller : マストヘッド広告削除");
@@ -211,7 +206,7 @@ function youTubeHomeAdKiller() {
 
 // ショート動画を削除する
 function shortsKiller() {
-  const short = document.querySelector("ytd-rich-shelf-renderer");
+  const short = document.querySelector("ytd-rich-section-renderer");
   if (short) {
     console.log("shortsKiller : ショート動画を削除");
     short.remove();
