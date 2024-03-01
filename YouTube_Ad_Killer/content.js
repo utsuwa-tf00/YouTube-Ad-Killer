@@ -185,18 +185,14 @@ function youTubeHomeAdKiller() {
     });
   }
 
-  const mastheadAd = document.querySelector(
-    "div#big-yoodle.style-scope.ytd-rich-grid-renderer"
-  );
+  const mastheadAd = document.querySelector("div#big-yoodle, div#masthead-ad");
   if (mastheadAd) {
     console.log("youTubeHomeAdKiller : マストヘッド広告削除");
     mastheadAd.remove();
   }
 
   // ytd-rich-section-rendererの広告を直接削除
-  const richSectionAds = document.querySelectorAll(
-    "ytd-rich-section-renderer.style-scope.ytd-rich-grid-renderer"
-  );
+  const richSectionAds = document.querySelectorAll("ytd-rich-section-renderer");
   if (richSectionAds.length > 0) {
     console.log(
       `youTubeHomeAdKiller : 大広告を ${richSectionAds.length} 個 削除`
