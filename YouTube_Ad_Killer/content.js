@@ -1,5 +1,5 @@
-// キーボードイベントを使用してフラグを切り替える
 let oldMovieKillerEnabled = false;
+
 document.addEventListener("keydown", function (event) {
   if (event.key === "Delete") {
     oldMovieKillerEnabled = !oldMovieKillerEnabled;
@@ -7,12 +7,57 @@ document.addEventListener("keydown", function (event) {
       oldMovieKillerEnabled ? "有効です" : "無効です"
     }`;
     console.log(text);
+
+    // header要素の背景色を切り替える
+    const header = document.querySelector("div#chips-content");
+    if (header) {
+      if (oldMovieKillerEnabled) {
+        header.style.backgroundColor = "#FF0000"; // 背景色を赤に設定
+        // header内のyt-formatted-stringのカラーを#FFFFFFに設定
+        const formattedStrings = header.querySelectorAll("yt-formatted-string");
+        formattedStrings.forEach((element) => {
+          element.style.color = "#FFFFFF";
+        });
+      } else {
+        header.style.backgroundColor = ""; // 背景色をデフォルト(または空)に戻す
+        // 注意: デフォルトのカラーが分からない場合は、この部分を調整する必要があります。
+        const formattedStrings = header.querySelectorAll("yt-formatted-string");
+        formattedStrings.forEach((element) => {
+          element.style.color = ""; // デフォルトカラーに戻す (この方法は元のカラーに依存する)
+        });
+      }
+    }
   }
 });
 
-// YouTubeページ上でのDOM変更を監視する
+let processingCount = 0; // 処理回数を追跡する変数
+let isThrottled = false; // 処理を一時停止しているかどうかのフラグ
+
+// 処理回数のリセットとフラグの更新を行う関数
+function resetThrottling() {
+  processingCount = 0;
+  isThrottled = false;
+}
+
 const observer = new MutationObserver(function (mutations) {
+  if (isThrottled) return; // 処理が一時停止されている場合は何もしない
+
   mutations.forEach(function (mutation) {
+    processingCount++; // 処理回数をインクリメント
+    if (processingCount > 10) {
+      // 10回以上の処理があった場合
+      //console.log("処理を一時停止します");
+      observer.disconnect(); // MutationObserverの監視を停止
+      isThrottled = true; // 処理を一時停止する
+
+      setTimeout(() => {
+        //console.log("処理を再開します");
+        observer.observe(document.body, { childList: true, subtree: true }); // 監視を再開
+        resetThrottling(); // 処理回数とフラグをリセット
+      }, 1000); // 1秒後に処理を再開
+    }
+
+    // 以下、URLに基づいた処理を実行
     const url = window.location.href;
     if (
       url === "https://www.youtube.com/" ||
@@ -20,15 +65,16 @@ const observer = new MutationObserver(function (mutations) {
     ) {
       youTubeHomeAdKiller();
       shortsKiller();
-
-      if (oldMovieKillerEnabled) {
-        oldMovieKiller();
-      }
+      if (oldMovieKillerEnabled) oldMovieKiller();
     } else if (url.includes("https://www.youtube.com/watch?")) {
       youTubePlayerAdKiller(mutation);
     }
   });
 });
+
+// MutationObserverを設定して、DOM変更を監視する
+const config = { childList: true, subtree: true };
+observer.observe(document.body, config);
 
 // YouTube動画ページの変更を処理する
 function youTubePlayerAdKiller(mutation) {
@@ -201,6 +247,37 @@ function youTubeHomeAdKiller() {
       ad.remove();
     });
   }
+
+  // YouTubeページのytd-rich-grid-row要素をすべて取得
+  const gridRows = document.querySelectorAll("ytd-rich-grid-row");
+
+  // 最初のytd-rich-item-rendererからitems-per-rowの値を取得
+  const firstItemRenderer = document.querySelector("ytd-rich-item-renderer");
+  const itemsPerRow = firstItemRenderer
+    ? parseInt(firstItemRenderer.getAttribute("items-per-row"), 10)
+    : 0;
+
+  gridRows.forEach((gridRow, index) => {
+    // 現在のgridRowのytd-rich-item-rendererをすべて取得
+    const itemRenderers = gridRow.querySelectorAll("ytd-rich-item-renderer");
+
+    let itemsNeeded = itemsPerRow - itemRenderers.length; // この行でアイテムが足りない場合の数
+
+    if (itemsNeeded > 0 && index < gridRows.length - 1) {
+      for (let i = index + 1; i < gridRows.length && itemsNeeded > 0; i++) {
+        const nextGridRow = gridRows[i];
+        const nextItemRenderers = nextGridRow.querySelectorAll(
+          "ytd-rich-item-renderer"
+        );
+
+        Array.from(nextItemRenderers).some((itemToMove) => {
+          gridRow.querySelector("div#contents").appendChild(itemToMove);
+          itemsNeeded--;
+          return itemsNeeded === 0; // itemsNeededが0になったら処理を停止
+        });
+      }
+    }
+  });
 }
 
 // ショート動画を削除する
@@ -260,7 +337,3 @@ function oldMovieKiller() {
     });
   }
 }
-
-// MutationObserverを設定して、DOM変更を監視する
-const config = { childList: true, subtree: true };
-observer.observe(document.body, config);
