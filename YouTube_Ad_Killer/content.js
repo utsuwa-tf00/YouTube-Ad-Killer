@@ -33,9 +33,13 @@ document.addEventListener("keydown", function (event) {
 let processingCount = 0; // 処理回数を追跡する変数
 let isThrottled = false; // 処理を一時停止しているかどうかのフラグ
 
+// 処理回数のリセットを1秒ごとに行う
+setInterval(() => {
+  processingCount = 0;
+}, 1000); // 1秒ごとに処理回数をリセット
+
 // 処理回数のリセットとフラグの更新を行う関数
 function resetThrottling() {
-  processingCount = 0;
   isThrottled = false;
 }
 
@@ -43,26 +47,23 @@ const observer = new MutationObserver(function (mutations) {
   if (isThrottled) return; // 処理が一時停止されている場合は何もしない
 
   mutations.forEach(function (mutation) {
-    processingCount++; // 処理回数をインクリメント
-    if (processingCount > 10) {
-      // 10回以上の処理があった場合
-      //console.log("処理を一時停止します");
-      observer.disconnect(); // MutationObserverの監視を停止
-      isThrottled = true; // 処理を一時停止する
-
-      setTimeout(() => {
-        //console.log("処理を再開します");
-        observer.observe(document.body, { childList: true, subtree: true }); // 監視を再開
-        resetThrottling(); // 処理回数とフラグをリセット
-      }, 1000); // 1秒後に処理を再開
-    }
-
     // 以下、URLに基づいた処理を実行
     const url = window.location.href;
     if (
       url === "https://www.youtube.com/" ||
       url === "https://www.youtube.com/?bp=wgUCEAE%3D"
     ) {
+      processingCount++; // 処理回数をインクリメント
+      if (processingCount > 100) {
+        // 1秒間に100回以上の処理があった場合
+        observer.disconnect(); // MutationObserverの監視を停止
+        isThrottled = true; // 処理を一時停止する
+        setTimeout(() => {
+          observer.observe(document.body, { childList: true, subtree: true }); // 監視を再開
+          resetThrottling(); // フラグをリセット
+        }, 1000); // 1秒後に処理を再開
+        return; // この時点で処理を中断
+      }
       youTubeHomeAdKiller();
       shortsKiller();
       if (oldMovieKillerEnabled) oldMovieKiller();
