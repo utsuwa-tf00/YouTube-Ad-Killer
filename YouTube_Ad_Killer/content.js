@@ -120,18 +120,27 @@ function skipPlayerAd() {
     "div#container.style-scope.ytd-player"
   );
 
-  if (videoContainer.querySelector(".ad-showing")) {
-    if (videoContainer.classList.contains("paused-mode")) {
-      videoContainer.classList.remove("paused-mode");
-      videoContainer.classList.add("playing-mode");
+  const adElement = videoContainer.querySelectorAll(
+    ".ad-showing, .ad-interrupting"
+  );
+
+  if (adElement.length > 0) {
+    adElement.forEach(function (ad) {
+      if (ad.classList.contains("paused-mode")) {
+        ad.classList.add("playing-mode");
+        ad.classList.remove("paused-mode");
+      }
+    });
+
+    if (video.paused) {
+      console.log("広告を強制再生");
+      video.play();
     }
 
-    if (video.currentTime < video.duration) {
-      console.log("youTubePlayerAdKiller : 広告スキップ");
-      video.style.filter = "brightness(0%)";
-      video.volume = 0;
-      video.currentTime = video.duration;
-    }
+    console.log("youTubePlayerAdKiller : 広告スキップ");
+    video.style.filter = "brightness(0%)";
+    video.volume = 0;
+    video.currentTime = video.duration;
   } else {
     if (video.style.filter == "brightness(0%)") {
       video.style.filter = "none";
@@ -193,29 +202,31 @@ function miniPlayerAdKiller() {
     return;
   }
 
-  const channelVideoPlayer = document.querySelector(
-    "ytd-channel-video-player-renderer"
-  );
-  if (!channelVideoPlayer) {
-    return;
-  }
-
-  const videoContainer = channelVideoPlayer.querySelector(
-    ".html5-video-player"
+  const videoContainer = document.querySelector(
+    "div#container.style-scope.ytd-player"
   );
 
-  if (videoContainer.classList.contains("ad-showing")) {
-    if (videoContainer.classList.contains("paused-mode")) {
-      videoContainer.classList.remove("paused-mode");
-      videoContainer.classList.add("playing-mode");
+  const adElement = videoContainer.querySelectorAll(
+    ".ad-showing, .ad-interrupting"
+  );
+
+  if (adElement.length > 0) {
+    adElement.forEach(function (ad) {
+      if (ad.classList.contains("paused-mode")) {
+        ad.classList.add("playing-mode");
+        ad.classList.remove("paused-mode");
+      }
+    });
+
+    if (video.paused) {
+      console.log("広告を強制再生");
+      video.play();
     }
 
-    if (video.currentTime < video.duration) {
-      console.log("miniPlayerAdKiller : 広告スキップ");
-      video.style.filter = "brightness(0%)";
-      video.volume = 0;
-      video.currentTime = video.duration;
-    }
+    console.log("youTubePlayerAdKiller : 広告スキップ");
+    video.style.filter = "brightness(0%)";
+    video.volume = 0;
+    video.currentTime = video.duration;
   } else {
     if (video.style.filter == "brightness(0%)") {
       video.style.filter = "none";
