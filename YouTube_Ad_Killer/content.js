@@ -140,7 +140,11 @@ function skipPlayerAd() {
     console.log("youTubePlayerAdKiller : 広告スキップ");
     video.style.filter = "brightness(0%)";
     video.volume = 0;
-    video.currentTime = video.duration;
+
+    const duration = video.duration;
+    if (video.currentTime < duration) {
+      video.currentTime = duration;
+    }
   } else {
     if (video.style.filter == "brightness(0%)") {
       video.style.filter = "none";
@@ -226,7 +230,11 @@ function miniPlayerAdKiller() {
     console.log("youTubePlayerAdKiller : 広告スキップ");
     video.style.filter = "brightness(0%)";
     video.volume = 0;
-    video.currentTime = video.duration;
+
+    const duration = video.duration;
+    if (video.currentTime < duration) {
+      video.currentTime = duration;
+    }
   } else {
     if (video.style.filter == "brightness(0%)") {
       video.style.filter = "none";
