@@ -66,9 +66,16 @@ const observer = new MutationObserver(function (mutations) {
       }
       youTubeHomeAdKiller();
       shortsKiller();
-      if (oldMovieKillerEnabled) oldMovieKiller();
+      if (oldMovieKillerEnabled) {
+        oldMovieKiller();
+      }
     } else if (url.includes("https://www.youtube.com/watch?")) {
       youTubePlayerAdKiller(mutation);
+    } else if (
+      url.includes("https://www.youtube.com/@") ||
+      url.includes("https://www.youtube.com/channel")
+    ) {
+      miniPlayerAdKiller();
     }
   });
 });
@@ -83,11 +90,6 @@ function youTubePlayerAdKiller(mutation) {
     skipPlayerAd();
   }
   removePlayerAds();
-  /*
-  if (oldMovieKillerEnabled) {
-    oldMovieKiller();
-  }
-  */
   removePromoPopups();
 }
 
@@ -103,30 +105,6 @@ function removeAdModule() {
       card.remove();
     });
   }
-
-  /*
-  const skipButton = document.querySelector(
-    ".ytp-ad-skip-button-modern.ytp-button"
-  );
-  // スキップボタン内の特定のdivを検索
-  const skipButtonText = skipButton
-    ? skipButton.querySelector(
-        "div.ytp-ad-text.ytp-ad-skip-button-text-centered.ytp-ad-skip-button-text"
-      )
-    : null;
-  // スキップ可能時のボタンテキスト
-  const texts = ["スキップ", "skip"];
-  
-  // スキップボタンとテキスト内容の両方が存在し、テキスト内容が"スキップ"であるか確認
-  texts.forEach(function (text) {
-    if (skipButton && skipButtonText.textContent === text) {
-      
-      if (adModule) {
-        adModule.remove();
-      }
-    }
-  });
-  */
 }
 
 // 広告をミュートして隠す
@@ -134,15 +112,20 @@ function skipPlayerAd() {
   //const adModule = document.querySelector(".video-ads.ytp-ad-module");
   const video = document.querySelector("video");
 
-  const videoContainer = document.querySelector(
-    "div#container.style-scope.ytd-player"
-  );
-
   if (!video) {
     return;
   }
 
+  const videoContainer = document.querySelector(
+    "div#container.style-scope.ytd-player"
+  );
+
   if (videoContainer.querySelector(".ad-showing")) {
+    if (videoContainer.classList.contains("paused-mode")) {
+      videoContainer.classList.remove("paused-mode");
+      videoContainer.classList.add("playing-mode");
+    }
+
     if (video.currentTime < video.duration) {
       console.log("youTubePlayerAdKiller : 広告スキップ");
       video.style.filter = "brightness(0%)";
@@ -202,6 +185,42 @@ function removePromoPopups() {
 function isElementVisible(element) {
   const style = window.getComputedStyle(element);
   return style.display !== "none" && style.visibility !== "hidden";
+}
+
+function miniPlayerAdKiller() {
+  const video = document.querySelector("video");
+  if (!video) {
+    return;
+  }
+
+  const channelVideoPlayer = document.querySelector(
+    "ytd-channel-video-player-renderer"
+  );
+  if (!channelVideoPlayer) {
+    return;
+  }
+
+  const videoContainer = channelVideoPlayer.querySelector(
+    ".html5-video-player"
+  );
+
+  if (videoContainer.classList.contains("ad-showing")) {
+    if (videoContainer.classList.contains("paused-mode")) {
+      videoContainer.classList.remove("paused-mode");
+      videoContainer.classList.add("playing-mode");
+    }
+
+    if (video.currentTime < video.duration) {
+      console.log("miniPlayerAdKiller : 広告スキップ");
+      video.style.filter = "brightness(0%)";
+      video.volume = 0;
+      video.currentTime = video.duration;
+    }
+  } else {
+    if (video.style.filter == "brightness(0%)") {
+      video.style.filter = "none";
+    }
+  }
 }
 
 // YouTubeホームページ上の広告を削除する
