@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Ad Killer",
-  "version": "1.1.15",
+  "version": "1.1.16",
   "description": "一旦YouTubeの広告を駆逐",
   "permissions": ["activeTab"],
   "content_scripts": [

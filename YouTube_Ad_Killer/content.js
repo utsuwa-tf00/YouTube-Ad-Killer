@@ -1,6 +1,6 @@
 let oldMovieKillerEnabled = false;
-let processingCount = 0;
 let isThrottled = false;
+let throttleTimer = null;
 
 // 設定のトグルとスタイルの更新を一つの関数で行う
 function toggleOldMovieKiller() {
@@ -9,7 +9,10 @@ function toggleOldMovieKiller() {
 }
 
 function updateHeaderStyle() {
-  const header = document.querySelector("div#chips-content");
+  //const header = document.querySelector("div#chips-content");
+  const header = document.querySelector(
+    "div#container.style-scope.ytd-masthead"
+  );
   if (header) {
     header.style.backgroundColor = oldMovieKillerEnabled ? "#FF0000" : "";
     header.querySelectorAll("yt-formatted-string").forEach((element) => {
@@ -25,20 +28,22 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-// 処理回数のリセットとフラグの更新を一つにまとめる
-function resetThrottle() {
-  processingCount = 0;
-  isThrottled = false;
-}
-
 // Throttlingのチェックと処理
+
 function checkAndApplyThrottling() {
-  if (processingCount > 10) {
+  if (!throttleTimer) {
+    // throttleTimerがセットされていない場合のみ処理を実行
     observer.disconnect();
     isThrottled = true;
-    setTimeout(() => {
+
+    // 1秒後にobserverを再度接続し、throttle状態をリセットする
+    throttleTimer = setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
-      resetThrottle();
+      isThrottled = false;
+
+      // タイマーをクリアして、次の処理が実行できるようにする
+      clearTimeout(throttleTimer);
+      throttleTimer = null;
     }, 100);
   }
 }
@@ -50,7 +55,6 @@ const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     const url = window.location.href;
     if (url.startsWith("https://www.youtube.com/")) {
-      processingCount++;
       routeActionBasedOnURL(url, mutation);
     }
   });
@@ -65,13 +69,15 @@ function routeActionBasedOnURL(url, mutation) {
     url === "https://www.youtube.com/?bp=wgUCEAE%3D"
   ) {
     performHomePageActions();
+    if (oldMovieKillerEnabled) oldMovieKiller();
   } else if (url.includes("https://www.youtube.com/watch?")) {
     youTubePlayerAdKiller(mutation);
+    if (oldMovieKillerEnabled) oldMovieKiller();
   } else if (
     url.includes("https://www.youtube.com/@") ||
     url.includes("https://www.youtube.com/channel")
   ) {
-    miniPlayerAdKiller();
+    skipPlayerAd();
   }
 }
 
@@ -82,8 +88,10 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 function performHomePageActions() {
   youTubeHomeAdKiller();
-  shortsKiller();
-  if (oldMovieKillerEnabled) oldMovieKiller();
+  removeElementsBySelector("ytd-rich-section-renderer");
+  removeElementsBySelector(
+    'a#endpoint[title="ショート"], a#endpoint[title="Shorts"]'
+  );
 }
 
 const config = { childList: true, subtree: true };
@@ -93,18 +101,11 @@ function youTubePlayerAdKiller(mutation) {
   if (mutation.addedNodes.length || mutation.removedNodes.length) {
     skipPlayerAd();
   }
+  removeElementsBySelector("img.ytp-ad-image");
   removeElementsBySelector(
     "div#player-ads.style-scope.ytd-watch-flexy, ytd-ad-slot-renderer.style-scope.ytd-watch-next-secondary-results-renderer"
   );
   removeElementsBySelector("div#main.style-scope.yt-mealbar-promo-renderer");
-  clickSkipAdButton();
-}
-
-function removeElementsBySelector(selector) {
-  const elements = document.querySelectorAll(selector);
-  elements.forEach(function (element) {
-    element.remove();
-  });
 }
 
 function skipPlayerAd() {
@@ -112,22 +113,23 @@ function skipPlayerAd() {
   if (!video) return;
 
   adjustVideoPlaybackForAds(video);
-  removeAdImages();
+  clickSkipAdButton();
 }
 
 function adjustVideoPlaybackForAds(video) {
   const adElements = document.querySelectorAll(".ad-showing, .ad-interrupting");
   if (adElements.length > 0) {
-    muteAndHideVideo(video);
-    skipToEndOfVideo(video);
-  } else {
-    resetVideoAppearance(video);
-  }
-}
+    video.style.filter = "brightness(0%)";
+    video.volume = 0;
 
-function muteAndHideVideo(video) {
-  video.style.filter = "brightness(0%)";
-  video.volume = 0;
+    if (isFinite(video.duration)) {
+      video.currentTime = video.duration;
+    }
+  } else {
+    if (video.style.filter === "brightness(0%)") {
+      video.style.filter = "";
+    }
+  }
 }
 
 function clickSkipAdButton() {
@@ -149,29 +151,6 @@ function clickSkipAdButton() {
       }
     });
   }
-}
-
-function skipToEndOfVideo(video) {
-  if (isFinite(video.duration)) {
-    video.currentTime = video.duration;
-    //playVideoIfNeeded(video);
-  }
-}
-
-function playVideoIfNeeded(video) {
-  if (video.paused) {
-    video.play();
-  }
-}
-
-function resetVideoAppearance(video) {
-  if (video.style.filter === "brightness(0%)") {
-    video.style.filter = "";
-  }
-}
-
-function removeAdImages() {
-  removeElementsBySelector("img.ytp-ad-image");
 }
 
 function removeElementsBySelector(selector) {
@@ -199,11 +178,15 @@ function removeParentElementsBySelector(childSelector, parentSelector) {
 function removeIfElementContainsText(selector, searchTextArray) {
   const elements = document.querySelectorAll(selector);
   elements.forEach((element) => {
+    // テキスト内容がsearchTextArrayのいずれかと一致するかをチェック
     const isMatch = searchTextArray.some((text) =>
       element.textContent.includes(text)
     );
     if (isMatch) {
-      const parentElement = element.closest("ytd-rich-item-renderer");
+      // 最も近い親要素を見つけて削除する
+      const parentElement = element.closest(
+        "ytd-rich-item-renderer, ytd-compact-video-renderer"
+      );
       if (parentElement) {
         parentElement.remove();
       }
@@ -259,13 +242,6 @@ function youTubeHomeAdKiller() {
       }
     }
   });
-}
-
-function shortsKiller() {
-  removeElementsBySelector("ytd-rich-section-renderer");
-  removeElementsBySelector(
-    'a#endpoint[title="ショート"], a#endpoint[title="Shorts"]'
-  );
 }
 
 function oldMovieKiller() {
